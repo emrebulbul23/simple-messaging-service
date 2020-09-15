@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  messaging-api:
+    container_name: messaging-api
+    build: ./messaging-api
+    restart: always
+    volumes:
+      - ./messaging-api:/messaging-api
+      - ~/.m2:/root/.m2
+    ports:
+      - 8085:8080
+    depends_on:
+      - api-database
+
+  api-database:
+    image: mongo
+    container_name: api-database
+    restart: always
+    ports:
+      - 27013:27017
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    command: mongod
