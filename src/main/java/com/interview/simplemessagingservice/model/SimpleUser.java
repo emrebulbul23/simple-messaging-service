@@ -2,12 +2,16 @@ package com.interview.simplemessagingservice.model;
 
 import org.springframework.data.annotation.Id;
 
+import java.util.Collections;
+import java.util.List;
+
 public class SimpleUser {
     @Id
     private String id;
 
     private String username;
     private String password;
+    private List<String> blockedUsers;
 
     /*
      * Private constructor to hide implicit public one.
@@ -23,6 +27,23 @@ public class SimpleUser {
     public SimpleUser(String username, String password) {
         this.username = username;
         this.password = password;
+        this.blockedUsers = Collections.emptyList();
+    }
+
+    /**
+     * Add newly blocked user's name to the list.
+     * @param username username
+     */
+    public void addBlockedUser(String username){
+        blockedUsers.add(username);
+    }
+
+    /**
+     * Get blocked users list.
+     * @return {@link List<String>}
+     */
+    public List<String> getBlockedUsers() {
+        return blockedUsers;
     }
 
     /**
