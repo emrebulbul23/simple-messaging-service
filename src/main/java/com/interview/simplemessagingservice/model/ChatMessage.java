@@ -21,6 +21,18 @@ public class ChatMessage {
         this.status = MessageStatus.DELIVERED;
     }
 
+    @Override
+    public String toString() {
+        return "ChatMessage{" +
+                "id='" + id + '\'' +
+                ", senderName='" + senderName + '\'' +
+                ", recipientName='" + recipientName + '\'' +
+                ", content='" + content + '\'' +
+                ", timestamp=" + timestamp +
+                ", status=" + status +
+                '}';
+    }
+
     public String getId() {
         return id;
     }
