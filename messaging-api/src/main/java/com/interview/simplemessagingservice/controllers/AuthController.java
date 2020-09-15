@@ -129,7 +129,7 @@ public class AuthController {
         if (!exists) {
             logger.error(MessageFormat.format("User to be blocked cannot be found! Username: {0}",
                     username));
-            return ResponseEntity.status(400).body("User to be blocked cannot be found");
+            return ResponseEntity.status(404).body("User to be blocked cannot be found");
         }
 
         String authenticatedUsersUsername = CommonUtil.getInstance().getAuthenticatedUsersUsername();
@@ -138,7 +138,7 @@ public class AuthController {
         if(byUsername.getBlockedUsers().contains(username)){
             logger.error(MessageFormat.format("User is already blocked! Username: {0}",
                     username));
-            return ResponseEntity.status(404).body("User is already blocked!");
+            return ResponseEntity.status(400).body("User is already blocked!");
         }
 
         byUsername.addBlockedUser(username);
@@ -160,6 +160,5 @@ public class AuthController {
         String authenticatedUsersUsername = CommonUtil.getInstance().getAuthenticatedUsersUsername();
         SimpleUser byUsername = userRepository.findByUsername(authenticatedUsersUsername);
         return ResponseEntity.ok(byUsername.getBlockedUsers());
-
     }
 }
