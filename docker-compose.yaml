@@ -8,14 +8,14 @@ services:
     ports:
       - 8085:8080
     depends_on:
-      - api-database4
+      - database4
     networks:
       - shared-net
 
-  api-database4:
+  database4:
     image: mongo
-    container_name: api-database4
-    hostname: api-database4
+    container_name: database4
+    hostname: database4
     restart: always
     ports:
       - 27030:27017
