@@ -111,7 +111,8 @@ public class AuthController {
         logger.info(MessageFormat.format("User authenticated successfully Username: {0}",
                 userReq.getUsername()));
         return ResponseEntity.ok(new JwtResponse(jwt,
-                userDetails.getUsername()));
+                userDetails.getUsername(),
+                userReq.getId()));
     }
 
     /**
@@ -135,7 +136,7 @@ public class AuthController {
         String authenticatedUsersUsername = CommonUtil.getInstance().getAuthenticatedUsersUsername();
         SimpleUser byUsername = userRepository.findByUsername(authenticatedUsersUsername);
         // check if user already blocked
-        if(byUsername.getBlockedUsers().contains(username)){
+        if (byUsername.getBlockedUsers().contains(username)) {
             logger.error(MessageFormat.format("User is already blocked! Username: {0}",
                     username));
             return ResponseEntity.status(400).body("User is already blocked!");
@@ -152,11 +153,12 @@ public class AuthController {
 
     /**
      * Get the list of blocked users blocked by the authenticated user.
+     *
      * @return List of blocked users.
      */
     @Operation(summary = "Get blocked users", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/blockedUsers")
-    public ResponseEntity<List<String>> getBlockedUsersList(){
+    public ResponseEntity<List<String>> getBlockedUsersList() {
         String authenticatedUsersUsername = CommonUtil.getInstance().getAuthenticatedUsersUsername();
         SimpleUser byUsername = userRepository.findByUsername(authenticatedUsersUsername);
         return ResponseEntity.ok(byUsername.getBlockedUsers());

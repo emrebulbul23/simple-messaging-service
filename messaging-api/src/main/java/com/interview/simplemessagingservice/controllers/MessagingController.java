@@ -1,6 +1,7 @@
 package com.interview.simplemessagingservice.controllers;
 
 import com.interview.simplemessagingservice.model.ChatMessage;
+import com.interview.simplemessagingservice.model.ChatNotification;
 import com.interview.simplemessagingservice.model.SimpleUser;
 import com.interview.simplemessagingservice.repositories.IChatMessageRepository;
 import com.interview.simplemessagingservice.repositories.IUserRepository;
@@ -11,6 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,6 +35,12 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RequestMapping("msg")
 public class MessagingController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
+     * Autowired SimpMessagingTemplate
+     */
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     /**
      * Autowired IUserRepository
@@ -62,7 +76,7 @@ public class MessagingController {
             // filter for blocked users
             Stream<ChatMessage> chatMessageStreamNew = chatMessageStream
                     .filter(msg -> !(blockedUsers.contains(msg.getSenderName()) ||
-                    blockedUsers.contains(msg.getRecipientName())));
+                            blockedUsers.contains(msg.getRecipientName())));
 
             logger.info(MessageFormat.format("Message history for user {0} is returned",
                     loggedUser));
@@ -70,7 +84,7 @@ public class MessagingController {
         }
 
 
-        if (blockedUsers.contains(username)){
+        if (blockedUsers.contains(username)) {
             logger.error("Messages are from a blocked user!");
             throw new ResponseStatusException(NOT_FOUND, "User blocked before!");
         }
@@ -105,8 +119,30 @@ public class MessagingController {
         String loggedUser = CommonUtil.getInstance().getAuthenticatedUsersUsername();
         ChatMessage chatMessage = new ChatMessage(loggedUser, receiver, content);
         ChatMessage save = chatMessageRepository.save(chatMessage);
+
+        /*
+         * Notify user whom is subscribed to topic: "/user/{recipientId}/queue/messages"
+         */
+        SimpleUser receiverUser = userRepository.findByUsername(receiver);
+        messagingTemplate.convertAndSend("/topic/public/"+receiverUser.getId(),
+                new ChatNotification(
+                        save.getId(),
+                        save.getSenderName()));
+
         logger.info(MessageFormat.format("Message successfully sent! Msg: {0}", save));
         return ResponseEntity.ok(MessageFormat.format("Message successfully sent to {0}", receiver));
+    }
+
+    /**
+     * Reply to websocket handshake messages.
+     * @param message Message from client.
+     * @return {@link ChatNotification}
+     */
+    @MessageMapping("/chat")
+    @SendTo("/topic/public")
+    public ChatNotification send(ChatNotification message){
+        logger.info("Websocket client is connected");
+        return message;
     }
 
     /**
@@ -115,7 +151,7 @@ public class MessagingController {
      * when they are received.
      *
      * @param messageId Id of the message to be fetched.
-     * @return  {@link ResponseEntity<ChatMessage>}
+     * @return {@link ResponseEntity<ChatMessage>}
      */
     @Operation(summary = "Get message with id", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "{messageId}")
@@ -134,8 +170,8 @@ public class MessagingController {
 
         // Check if message if from blocked user
         ChatMessage chatMessage = byId.get();
-        if(byUsername.getBlockedUsers().contains(chatMessage.getSenderName()) ||
-                byUsername.getBlockedUsers().contains(chatMessage.getRecipientName())){
+        if (byUsername.getBlockedUsers().contains(chatMessage.getSenderName()) ||
+                byUsername.getBlockedUsers().contains(chatMessage.getRecipientName())) {
             String format = MessageFormat.format("Message is from a blocked user! MessageId: {0}", messageId);
             logger.error(format);
             throw new ResponseStatusException(NOT_FOUND, "Message not found!");

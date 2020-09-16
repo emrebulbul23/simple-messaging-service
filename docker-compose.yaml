@@ -1,21 +1,21 @@
 version: '3'
 
 services:
-  messaging-api6:
-    container_name: 'messaging-api6'
+  messaging-api:
+    container_name: 'messaging-api'
     build: ./messaging-api
     restart: always
     ports:
       - 8085:8080
     depends_on:
-      - database4
+      - database
     networks:
       - shared-net
 
-  database4:
+  database:
     image: mongo
-    container_name: database4
-    hostname: database4
+    container_name: database
+    hostname: database
     restart: always
     ports:
       - 27030:27017
