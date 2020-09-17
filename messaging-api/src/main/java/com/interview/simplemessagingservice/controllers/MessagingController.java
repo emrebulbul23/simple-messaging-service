@@ -64,7 +64,7 @@ public class MessagingController {
     @Operation(summary = "Get message history", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "")
     public List<ChatMessage> getMessageHistory(
-            @RequestParam(name = "usarname", required = false, defaultValue = "") String username) {
+            @RequestParam(name = "username", required = false, defaultValue = "") String username) {
         // Get authorized user's name to filter messages
         String loggedUser = CommonUtil.getInstance().getAuthenticatedUsersUsername();
         Stream<ChatMessage> chatMessageStream = chatMessageRepository.findAll().stream()

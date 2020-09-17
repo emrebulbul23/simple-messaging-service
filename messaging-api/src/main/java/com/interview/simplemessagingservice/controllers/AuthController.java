@@ -91,8 +91,8 @@ public class AuthController {
      */
     @Operation(summary = "Authenticate user")
     @PostMapping("/signin")
-    public ResponseEntity authenticateUser(@RequestParam(name = "username", required = true) String username,
-                                           @RequestParam(name = "password", required = true) String password) {
+    public ResponseEntity authenticateUser(@RequestParam(name = "username") String username,
+                                           @RequestParam(name = "password") String password) {
         final SimpleUser userReq = new SimpleUser(username, password);
         boolean isExist = userRepository.existsByUsername(userReq.getUsername());
         if (!isExist) {
@@ -110,9 +110,11 @@ public class AuthController {
 
         logger.info(MessageFormat.format("User authenticated successfully Username: {0}",
                 userReq.getUsername()));
+        //get user id
+        SimpleUser byUsername = userRepository.findByUsername(username);
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getUsername(),
-                userReq.getId()));
+                byUsername.getId()));
     }
 
     /**
