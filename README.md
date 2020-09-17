@@ -2,6 +2,8 @@
 
 A simple implementation of Messaging Service with Spring Boot framework.
 
+Live Demo on AWS: http://ec2-18-222-30-245.us-east-2.compute.amazonaws.com:8085/swagger-ui.html
+
 **Tech Stack**:
 * Java
 * Spring Boot
@@ -18,6 +20,7 @@ A simple implementation of Messaging Service with Spring Boot framework.
 * API Documentation with [OpenApi Swagger](https://swagger.io/).
 
 **Run**:
+
 To run it on local machine
 
 ```
